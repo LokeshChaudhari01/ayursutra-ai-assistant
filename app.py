@@ -274,48 +274,24 @@ async def get_ai_response(message: str, search_medicines: bool = False) -> ChatR
         if google_api_key and model:
             print("🚀 Using Google Gemini...")
 
-            # Detect Ayurveda vs Normal Chat
-            health_keywords = [
-                'pain','ache','sick','disease','cure','medicine','remedy','treatment','symptom',
-                'health','ayurveda','herbal','dosage','tablet','capsule','syrup','oil','powder',
-                'churna','vati','ras','asava','aristha','cold','cough','fever','throat','headache',
-                'migraine','digestion','stomach','acidity','gas','bloating','stress','anxiety',
-                'sleep','insomnia','immunity','weakness','fatigue'
-            ]
-            is_health_query = any(keyword in message.lower() for keyword in health_keywords)
-
-            # Choose style
-            if is_health_query:
-                full_prompt = f"""
-You are an expert Ayurvedic health assistant.
+            # Provide a comprehensive prompt and let the LLM handle context
+            full_prompt = f"""
+You are Ayursutra, an expert Ayurvedic health and wellness assistant. 
 
 User's message: {message}
 
-Respond with:
-1. Understanding of their concern
-2. Ayurvedic remedies (herbs, medicines, doshas if relevant)
-3. Home remedies + diet/lifestyle suggestions
-4. Reminder to consult an Ayurvedic doctor if needed
+Instructions:
+1. If the user is asking a health, wellness, or Ayurveda-related question:
+   - Understand and acknowledge their concern empathetically.
+   - Suggest relevant Ayurvedic remedies (herbs, medicines, dosha balancing if applicable).
+   - Provide practical home remedies, dietary, and lifestyle suggestions.
+   - Provide detailed, helpful answers. Use bullet points and clear formatting for readability.
+   - Remind them to consult a qualified Ayurvedic doctor for serious conditions.
+2. If the user asks general or unrelated questions, gently explain that your expertise is in Ayurveda and health, and answer as best as you can while guiding them back to wellness topics.
+3. If the user greets you, respond warmly and ask how you can help with their health today.
 
-Keep it practical, short (~150 words), use bullet points, and be clear.
+Keep your tone warm, respectful, and professional. Do not give vague or evasive answers if the user has a genuine question.
 """
-            else:
-                full_prompt = f"""
-You are a friendly Ayurvedic AI assistant.
-
-User's message: {message}
-
-Respond in a polite, supportive way:
-- Keep replies warm and respectful (not overly casual).
-- If the user greets (e.g., "hi", "how are you"), reply briefly and add:
-  "I’m here to support you with your health and Ayurveda."
-- If the user asks general things, gently guide the conversation back to wellness or Ayurveda.
-- Share Ayurvedic lifestyle or wellness hints naturally, but only if relevant.
-- DO NOT pretend to be a general chatbot (avoid unrelated small talk).
-
-Keep answers short, focused, and professional, while still friendly.
-"""
-
 
             response = await asyncio.get_event_loop().run_in_executor(
                 None, lambda: model.generate_content(full_prompt)
@@ -325,7 +301,7 @@ Keep answers short, focused, and professional, while still friendly.
             return ChatResponse(
                 response=ai_response,
                 medicine_results=None,
-                confidence=0.9 if is_health_query else 0.7
+                confidence=0.9
             )
 
         else:
